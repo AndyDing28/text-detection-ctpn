@@ -8,6 +8,8 @@ import sys
 import cv2
 import numpy as np
 import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from tensorflow.python.platform import gfile
 
 sys.path.append(os.getcwd())
@@ -26,7 +28,7 @@ def resize_im(im, scale, max_scale=None):
 
 
 def draw_boxes(img, image_name, boxes, scale):
-    base_name = image_name.split('/')[-1]
+    base_name = image_name.split('\\')[-1]
     with open('data/results/' + 'res_{}.txt'.format(base_name.split('.')[0]), 'w') as f:
         for box in boxes:
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
