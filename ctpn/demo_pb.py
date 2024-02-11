@@ -11,9 +11,10 @@ import tensorflow as tf
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 from tensorflow.python.platform import gfile
-import pytesseract
+from PIL import Image
+#import pytesseract
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\josep\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+#pytesseract.pytesseract.tesseract_cmd = r'C:\Users\josep\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
 sys.path.append(os.getcwd())
 from lib.fast_rcnn.config import cfg, cfg_from_file
@@ -31,7 +32,7 @@ def resize_im(im, scale, max_scale=None):
 
 
 def draw_boxes(img, image_name, boxes, scale):
-    base_name = image_name.split('\\')[-1]
+    base_name = os.path.basename(image_name)
     with open('data/results/' + 'res_{}.txt'.format(base_name.split('.')[0]), 'w') as f:
         for box in boxes:
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
@@ -55,11 +56,49 @@ def draw_boxes(img, image_name, boxes, scale):
 
     img = cv2.resize(img, None, None, fx=1.0 / scale, fy=1.0 / scale, interpolation=cv2.INTER_LINEAR)
     cv2.imwrite(os.path.join("data/results", base_name), img)
+    crop_image(base_name, 'data/results/res_{}.txt'.format(base_name.split('.')[0]))
     f = open(os.path.join("data/resulttext/{}.txt").format(base_name.split('.')[0]), "x")
+    
+    read_image('data/cropped')
     #f.write(pytesseract.image_to_string(os.path.join("data/results", base_name) , lang = 'eng')) # where img is
-    f.write(pytesseract.image_to_string(img) ) # where img is may not work
+    # where img is may not work
     f.close()
     # info = pytesseract.image_to_string('nf1.jpg' , lang = 'eng')
+
+def read_image(folder_path):
+    with os.scandir(folder_path) as entries:
+        for entry in entries:
+            # Check if the entry is a file
+            if entry.is_file():
+                # Process the file
+                print(entry.name)
+                img_path = os.path.join(folder_path, entry.name)
+                img = Image.open(img_path)
+                f = open(os.path.join("data/resulttext/{}.txt").format(entry.name.split('.')[0]), "x")
+                f.write(pytesseract.image_to_string(img))
+                
+
+def crop_image(base_name, file_path):
+    img = Image.open('data/demo/{}'.format(base_name))
+    count = 0
+    #for loop
+    with open(file_path, 'r') as file:
+        for line in file:
+            #get each entry
+            # Split the line by comma
+            parts = line.strip().split(',')
+            # Convert parts to integers
+            params_int = [int(part) for part in parts]
+            #crop
+            # Call the function with the converted parameters
+            cropped_image = img.crop(tuple(params_int))
+
+            #save
+            filename, extension = os.path.splitext(base_name)  # Splitting filename and extension
+            cropped_filename = f"{filename}_cropped_{count}{extension}"  # Constructing new filename
+            output_path = os.path.join("data/cropped/", cropped_filename)
+            cropped_image.save(output_path)
+            count += 1
 
 
 if __name__ == '__main__':
@@ -106,3 +145,5 @@ if __name__ == '__main__':
         textdetector = TextDetector()
         boxes = textdetector.detect(boxes, scores[:, np.newaxis], img.shape[:2])
         draw_boxes(img, im_name, boxes, scale)
+
+
