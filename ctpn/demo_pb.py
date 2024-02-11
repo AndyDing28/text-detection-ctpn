@@ -11,6 +11,7 @@ import tensorflow as tf
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 from tensorflow.python.platform import gfile
+import pytesseract
 
 sys.path.append(os.getcwd())
 from lib.fast_rcnn.config import cfg, cfg_from_file
@@ -52,6 +53,11 @@ def draw_boxes(img, image_name, boxes, scale):
 
     img = cv2.resize(img, None, None, fx=1.0 / scale, fy=1.0 / scale, interpolation=cv2.INTER_LINEAR)
     cv2.imwrite(os.path.join("data/results", base_name), img)
+    f = open(os.path.join("data/resulttext/{}.txt").format(base_name.split('.')[0]), "x")
+    #f.write(pytesseract.image_to_string(os.path.join("data/results", base_name) , lang = 'eng')) # where img is
+    f.write(pytesseract.image_to_string(img) , lang = 'eng') # where img is may not work
+    f.close()
+    # info = pytesseract.image_to_string('nf1.jpg' , lang = 'eng')
 
 
 if __name__ == '__main__':
