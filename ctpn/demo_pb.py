@@ -13,6 +13,8 @@ tf.disable_v2_behavior()
 from tensorflow.python.platform import gfile
 import pytesseract
 
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\josep\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+
 sys.path.append(os.getcwd())
 from lib.fast_rcnn.config import cfg, cfg_from_file
 from lib.fast_rcnn.test import _get_blobs
@@ -55,7 +57,7 @@ def draw_boxes(img, image_name, boxes, scale):
     cv2.imwrite(os.path.join("data/results", base_name), img)
     f = open(os.path.join("data/resulttext/{}.txt").format(base_name.split('.')[0]), "x")
     #f.write(pytesseract.image_to_string(os.path.join("data/results", base_name) , lang = 'eng')) # where img is
-    f.write(pytesseract.image_to_string(img) , lang = 'eng') # where img is may not work
+    f.write(pytesseract.image_to_string(img) ) # where img is may not work
     f.close()
     # info = pytesseract.image_to_string('nf1.jpg' , lang = 'eng')
 
